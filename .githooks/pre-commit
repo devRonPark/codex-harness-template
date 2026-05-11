@@ -1,0 +1,18 @@
+#!/bin/sh
+set -eu
+
+ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+cd "$ROOT"
+
+echo "pre-commit: checking harness executor syntax"
+python3 -m py_compile scripts/create_phase.py scripts/execute.py
+
+echo "pre-commit: running script unit tests"
+python3 -m unittest discover -s scripts -p 'test_*.py'
+
+echo "pre-commit: validating JSON files"
+find . -path ./.git -prune -o -name '*.json' -type f -print | while IFS= read -r file; do
+  python3 -m json.tool "$file" >/dev/null
+done
+
+echo "pre-commit: template validation passed"

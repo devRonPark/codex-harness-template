@@ -1,0 +1,28 @@
+# local environment
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node/project outputs created by target projects
+node_modules/
+.next/
+dist/
+build/
+out/
+coverage/
+
+# Codex harness outputs
+phases/**/step*-output.json
+phases/**/phase*-output.json
+
+# local reports and temporary files
+reports/
+tmp/
+*.log

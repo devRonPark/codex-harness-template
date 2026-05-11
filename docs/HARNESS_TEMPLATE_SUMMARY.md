@@ -1,0 +1,188 @@
+# Codex Harness Template Guide
+
+This repository is a product-neutral Codex harness template. It contains the files needed to plan implementation work as phase steps and execute those steps through `codex exec`.
+
+## What This Template Is For
+
+Use this template when you want Codex to implement a project through explicit, reviewable step files instead of a single large prompt.
+
+The template is useful for:
+
+- breaking work into sequential phases
+- preserving execution status in JSON
+- giving each Codex run enough local context to work independently
+- recording step summaries for later steps
+- separating code commits from harness metadata commits
+
+## Core Files
+
+| Path | Purpose |
+| --- | --- |
+| `AGENTS.md` | Template-level operating rules and guardrails. |
+| `.agents/skills/harness/SKILL.md` | Workflow for planning phase files and running the harness. |
+| `.agents/skills/review/SKILL.md` | Review checklist for validating local changes. |
+| `.codex/config.toml` | Enables Codex hooks. |
+| `.codex/hooks.json` | Registers hook commands. |
+| `.codex/hooks/tdd-guard.sh` | Optional pre-edit guard for implementation files. |
+| `.githooks/pre-commit` | Lightweight template validation hook. |
+| `docs/PRD.md` | Product requirements template for the target project. |
+| `docs/ARCHITECTURE.md` | Architecture template for the target project. |
+| `docs/ADR.md` | Architecture decision record template. |
+| `phases/index.json` | Top-level phase registry. |
+| `scripts/create_phase.py` | Phase scaffold generator. |
+| `scripts/execute.py` | Executor that runs pending phase steps through Codex. |
+
+## Phase Registry
+
+`phases/index.json` starts empty:
+
+```json
+{
+  "phases": []
+}
+```
+
+Add a phase when you are ready to plan work. You can edit the JSON manually, but the preferred path is:
+
+```bash
+python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,final-review
+```
+
+The generated registry entry looks like this:
+
+```json
+{
+  "phases": [
+    {
+      "dir": "example-phase",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+Allowed statuses:
+
+- `pending`
+- `completed`
+- `error`
+- `blocked`
+
+## Phase Detail File
+
+`scripts/create_phase.py` creates `phases/{phase-name}/index.json`:
+
+```json
+{
+  "project": "Project Name",
+  "phase": "example-phase",
+  "steps": [
+    {
+      "step": 0,
+      "name": "project-setup",
+      "status": "pending"
+    },
+    {
+      "step": 1,
+      "name": "core-domain",
+      "status": "pending"
+    }
+  ]
+}
+```
+
+Rules:
+
+- `phase` must match the directory name.
+- `step` values start at `0`.
+- `name` values should be short kebab-case slugs.
+- New steps start as `pending`.
+- Do not add timestamps manually. `scripts/execute.py` records them.
+
+## Step Prompt Format
+
+Each generated step lives at `phases/{phase-name}/step{N}.md`.
+
+Recommended structure:
+
+````markdown
+# Step {N}: {step-name}
+
+## Read First
+
+- `/AGENTS.md`
+- `/docs/PRD.md`
+- `/docs/ARCHITECTURE.md`
+- `/docs/ADR.md`
+- {files created or changed by previous steps}
+
+## Task
+
+Describe the concrete implementation work. Include file paths, required interfaces, constraints, and expected behavior.
+
+## Acceptance Criteria
+
+```bash
+{project-specific validation command}
+```
+
+## Verification
+
+1. Run the acceptance criteria.
+2. Check architecture and ADR compliance.
+3. Update `phases/{phase-name}/index.json`:
+   - success: `status: completed` plus `summary`
+   - unrecoverable failure: `status: error` plus `error_message`
+   - needs user input: `status: blocked` plus `blocked_reason`
+
+## Do Not
+
+- Add unrelated features. Reason: keep the step independently reviewable.
+- Change files outside the step scope unless required by the acceptance criteria.
+````
+
+## Running A Phase
+
+Initialize Git before executing a phase. The executor creates or checks out `feat-{phase-name}`.
+
+```bash
+python3 scripts/execute.py {phase-name}
+```
+
+Push after completion:
+
+```bash
+python3 scripts/execute.py {phase-name} --push
+```
+
+## What The Executor Does
+
+`scripts/execute.py`:
+
+- checks for `phases/{phase-name}/index.json`
+- creates or checks out `feat-{phase-name}`
+- injects `AGENTS.md` and `docs/*.md` into each step prompt
+- sends completed step summaries to later steps
+- invokes `codex exec` for the next pending step
+- stores raw step output as `phases/{phase-name}/step{N}-output.json`
+- retries failed steps up to three times
+- records timestamps
+- commits code changes and harness metadata separately
+- updates `phases/index.json` when the phase completes, errors, or blocks
+
+## Template Validation
+
+```bash
+.githooks/pre-commit
+```
+
+## Adapting The Template
+
+For a new project:
+
+1. Replace `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/ADR.md`.
+2. Update `AGENTS.md` with project-specific rules.
+3. Create a phase entry and step files.
+4. Execute only after the phase plan is reviewed.
+
+Keep this repository clean: do not add generated caches, dependency directories, build outputs, local reports, or secrets.

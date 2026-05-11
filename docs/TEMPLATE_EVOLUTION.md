@@ -1,0 +1,163 @@
+# Template Evolution Roadmap
+
+This document is the working map for turning this Codex-only base harness into a personal harness over time.
+
+## Current Baseline
+
+The current template is intentionally small:
+
+- Codex-only execution through `scripts/execute.py`
+- phase registry in `phases/index.json`
+- phase scaffold generation through `scripts/create_phase.py`
+- self-contained step prompts in `phases/{phase-name}/step{N}.md`
+- project contract templates in `docs/`
+- Codex skill files in `.agents/skills/`
+- optional TDD guard hook
+- lightweight pre-commit validation for Python syntax and JSON validity
+
+This is the right base because it has no application framework, no npm dependency, no product API code, and no completed demo phase.
+
+## Design Principles
+
+1. Keep the base product-neutral.
+2. Prefer explicit files over hidden behavior.
+3. Keep every phase step executable in a fresh Codex session.
+4. Add automation only when it removes repeated manual work.
+5. Keep hooks portable and easy to disable.
+6. Record durable decisions in `docs/ADR.md`.
+7. Do not add project code to the base template.
+
+## Extension Points
+
+Use these locations for future customization:
+
+| Area | Path | What To Add |
+| --- | --- | --- |
+| Planning workflow | `.agents/skills/harness/SKILL.md` | Step design rules, phase conventions, execution policy. |
+| Review workflow | `.agents/skills/review/SKILL.md` | Review checklist, metadata checks, project guardrails. |
+| Executor behavior | `scripts/execute.py` | CLI flags, dry-run mode, validation, logging, resume behavior. |
+| Hooks | `.codex/hooks.json`, `.codex/hooks/` | Opt-in guardrails before edits or commands. |
+| Contract templates | `docs/PRD.md`, `docs/ARCHITECTURE.md`, `docs/ADR.md` | Better prompts for project definition. |
+| Phase metadata | `phases/index.json` and per-phase `index.json` | Extra fields that help execution or reporting. |
+
+## Recommended Evolution Order
+
+### 1. Add A Phase Scaffolder
+
+Goal: create a command that generates `phases/{phase-name}/index.json` and starter `step{N}.md` files from a small spec.
+
+Why first: phase creation is repetitive, and scaffolding can stay product-neutral.
+
+Status: implemented in `scripts/create_phase.py`.
+
+Possible command:
+
+```bash
+python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,final-review
+```
+
+### 2. Add Metadata Validation
+
+Goal: validate phase files before execution.
+
+Checks:
+
+- `phases/index.json` includes the phase.
+- each phase has an `index.json`
+- step numbers are contiguous from `0`
+- each `step{N}.md` exists
+- statuses are valid
+- completed steps include `summary`
+- blocked/error steps include the right reason field
+
+### 3. Add Executor Dry Run
+
+Goal: inspect what would run without invoking Codex.
+
+Possible command:
+
+```bash
+python3 scripts/execute.py example-phase --dry-run
+```
+
+Dry run should print:
+
+- target branch
+- next pending step
+- files that will be read
+- validation warnings
+
+### 4. Add Execution Report
+
+Goal: summarize phase state without reading JSON manually.
+
+Possible command:
+
+```bash
+python3 scripts/report_phase.py example-phase
+```
+
+Useful output:
+
+- completed / pending / blocked / error counts
+- latest completed step summary
+- next pending step
+- raw output artifact paths
+
+### 5. Add Optional Hook Profiles
+
+Goal: keep hooks portable while allowing stricter local workflows.
+
+Examples:
+
+- `tdd`
+- `json-valid`
+- `no-secrets`
+- `phase-metadata`
+
+Avoid hard-coding framework-specific commands like `npm run lint` in the base template.
+
+### 6. Add Personal Review Rubric
+
+Goal: make `.agents/skills/review/SKILL.md` reflect how you personally want Codex work reviewed.
+
+Good additions:
+
+- severity rubric
+- required final checklist
+- phase metadata checks
+- rules for when to run validation
+
+## Backlog
+
+- `scripts/validate_phase.py`
+- `scripts/report_phase.py`
+- `--dry-run` for `scripts/execute.py`
+- `--max-retries` override for `scripts/execute.py`
+- configurable sandbox and approval policy
+- optional JSON schema for phase metadata
+- hook profile documentation
+- example phase stored as documentation, not active phase output
+
+## Keep Out Of The Base
+
+Do not add these unless the template deliberately changes scope:
+
+- Next.js, React, Vite, or other app scaffold
+- npm lockfiles
+- provider-specific API scripts
+- completed product phases
+- generated step output JSON
+- local reports
+- secrets or `.env.local`
+- one project's source code
+
+## Decision Log
+
+Use `docs/ADR.md` when a customization becomes part of the base template. Examples:
+
+- choosing whether hooks are opt-in or always-on
+- choosing phase metadata schema
+- changing executor sandbox defaults
+- adding a scaffolding script
+- requiring a validation command before execution
