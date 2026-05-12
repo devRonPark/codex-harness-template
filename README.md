@@ -20,6 +20,7 @@ docs/HARNESS_TEMPLATE_SUMMARY.md  # Template usage guide
 docs/TEMPLATE_EVOLUTION.md        # Personalization roadmap
 phases/index.json                 # Phase registry
 scripts/create_phase.py           # Phase scaffold generator
+scripts/validate_phase.py         # Phase metadata validator
 scripts/execute.py                # Codex phase executor
 ```
 
@@ -33,7 +34,13 @@ python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,
 ```
 
 3. Fill in the generated step files.
-4. Run the phase executor:
+4. Validate the phase metadata:
+
+```bash
+python3 scripts/validate_phase.py {phase-name}
+```
+
+5. Run the phase executor:
 
 ```bash
 python3 scripts/execute.py {phase-name}

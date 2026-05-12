@@ -14,6 +14,8 @@ It intentionally does not include an application scaffold, package manager setup
 - `.codex/hooks.json`: registers local hook commands.
 - `.codex/hooks/tdd-guard.sh`: optional TDD guard for implementation edits.
 - `.githooks/pre-commit`: template-level validation hook.
+- `scripts/create_phase.py`: phase scaffold generator.
+- `scripts/validate_phase.py`: phase metadata validator.
 - `scripts/execute.py`: phase executor that invokes `codex exec` for pending steps.
 - `phases/index.json`: top-level list of planned phase directories.
 - `docs/PRD.md`: product requirements template for the target project.
@@ -91,7 +93,13 @@ Avoid:
 Validate the template-level Python executor syntax:
 
 ```bash
-python3 -m py_compile scripts/execute.py
+python3 -m py_compile scripts/create_phase.py scripts/execute.py scripts/validate_phase.py
+```
+
+Validate a phase:
+
+```bash
+python3 scripts/validate_phase.py {phase-name}
 ```
 
 Run a phase:

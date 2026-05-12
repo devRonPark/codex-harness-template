@@ -28,8 +28,10 @@ The template is useful for:
 | `docs/PRD.md` | Product requirements template for the target project. |
 | `docs/ARCHITECTURE.md` | Architecture template for the target project. |
 | `docs/ADR.md` | Architecture decision record template. |
+| `docs/NEXT_PROGRESS_PLAN.md` | Ordered harness evolution plan for preserving branch-to-branch context. |
 | `phases/index.json` | Top-level phase registry. |
 | `scripts/create_phase.py` | Phase scaffold generator. |
+| `scripts/validate_phase.py` | Phase metadata validator. |
 | `scripts/execute.py` | Executor that runs pending phase steps through Codex. |
 
 ## Phase Registry
@@ -98,6 +100,14 @@ Rules:
 - `name` values should be short kebab-case slugs.
 - New steps start as `pending`.
 - Do not add timestamps manually. `scripts/execute.py` records them.
+
+Validate a phase before execution:
+
+```bash
+python3 scripts/validate_phase.py example-phase
+```
+
+The validator checks registry entries, phase naming, contiguous step numbers, required step prompt files, allowed statuses, and required status detail fields.
 
 ## Step Prompt Format
 

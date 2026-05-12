@@ -9,6 +9,7 @@ The current template is intentionally small:
 - Codex-only execution through `scripts/execute.py`
 - phase registry in `phases/index.json`
 - phase scaffold generation through `scripts/create_phase.py`
+- phase metadata validation through `scripts/validate_phase.py`
 - self-contained step prompts in `phases/{phase-name}/step{N}.md`
 - project contract templates in `docs/`
 - Codex skill files in `.agents/skills/`
@@ -59,6 +60,8 @@ python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,
 ### 2. Add Metadata Validation
 
 Goal: validate phase files before execution.
+
+Status: implemented in `scripts/validate_phase.py`.
 
 Checks:
 
@@ -130,7 +133,6 @@ Good additions:
 
 ## Backlog
 
-- `scripts/validate_phase.py`
 - `scripts/report_phase.py`
 - `--dry-run` for `scripts/execute.py`
 - `--max-retries` override for `scripts/execute.py`
