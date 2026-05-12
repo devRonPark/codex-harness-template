@@ -21,6 +21,7 @@ coverage/
 # Codex harness outputs
 phases/**/step*-output.json
 phases/**/phase*-output.json
+.codex/hook-profile.local
 
 # local reports and temporary files
 reports/

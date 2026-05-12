@@ -208,6 +208,14 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 - `tdd`: implementation edit 전 TDD guard 적용
 - `strict`: secrets, JSON, metadata, template validation을 함께 수행
 
+현재 메모:
+
+- `.codex/hooks/run-profile.sh`가 profile dispatch를 담당한다.
+- profile 선택 우선순위는 `HARNESS_HOOK_PROFILE`, `CODEX_HOOK_PROFILE`, `.codex/hook-profile.local`, `minimal`이다.
+- Codex `PreToolUse` hook은 기본 `minimal`에서는 blocking하지 않고, `tdd` 또는 `strict`에서만 기존 TDD guard를 실행한다.
+- `.githooks/pre-commit`은 profile runner를 호출한다.
+- `phase-metadata`, `no-secrets`, `strict`는 기본 template validation 위에 opt-in 검사를 추가한다.
+
 완료 기준:
 
 - hook profile의 목적과 켜는 방법이 문서화된다.
@@ -264,6 +272,6 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 ## Current Priority
 
-다음으로 이어갈 우선순위는 `Step 5. Hook Profiles`이다.
+다음으로 이어갈 우선순위는 `Step 6. Personal Review Rubric`이다.
 
-`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`는 현재 저장소에 존재한다. 다음 작업자는 기본 동작을 product-neutral하게 유지하면서 optional hook profile을 설계하는 것이 자연스럽다.
+`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`, `Step 5. Hook Profiles`는 현재 저장소에 존재한다. 다음 작업자는 `.agents/skills/review/SKILL.md`를 중심으로 personal review rubric을 강화하는 것이 자연스럽다.

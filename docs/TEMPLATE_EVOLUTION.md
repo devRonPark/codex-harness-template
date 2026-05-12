@@ -12,6 +12,7 @@ The current template is intentionally small:
 - phase metadata validation through `scripts/validate_phase.py`
 - read-only executor dry-run through `scripts/execute.py --dry-run`
 - phase status reporting through `scripts/report_phase.py`
+- optional hook profiles through `.codex/hooks/run-profile.sh`
 - self-contained step prompts in `phases/{phase-name}/step{N}.md`
 - project contract templates in `docs/`
 - Codex skill files in `.agents/skills/`
@@ -122,6 +123,8 @@ Output:
 
 Goal: keep hooks portable while allowing stricter local workflows.
 
+Status: implemented in `.codex/hooks/run-profile.sh`.
+
 Examples:
 
 - `tdd`
@@ -130,6 +133,22 @@ Examples:
 - `phase-metadata`
 
 Avoid hard-coding framework-specific commands like `npm run lint` in the base template.
+
+Implemented profiles:
+
+- `minimal`: template validation only; this is the default.
+- `json-valid`: alias for default template validation, which already includes JSON checks.
+- `phase-metadata`: default validation plus every registered phase through `scripts/validate_phase.py`.
+- `no-secrets`: default validation plus a lightweight tracked-file secret scan.
+- `tdd`: default validation plus Codex pre-edit TDD guard.
+- `strict`: phase metadata, no-secrets, and Codex pre-edit TDD guard.
+
+Selection order:
+
+1. `HARNESS_HOOK_PROFILE`
+2. `CODEX_HOOK_PROFILE`
+3. `.codex/hook-profile.local`
+4. `minimal`
 
 ### 6. Add Personal Review Rubric
 
@@ -147,7 +166,6 @@ Good additions:
 - `--max-retries` override for `scripts/execute.py`
 - configurable sandbox and approval policy
 - optional JSON schema for phase metadata
-- hook profile documentation
 - example phase stored as documentation, not active phase output
 
 ## Keep Out Of The Base

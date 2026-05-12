@@ -23,6 +23,7 @@ The template is useful for:
 | `.agents/skills/review/SKILL.md` | Review checklist for validating local changes. |
 | `.codex/config.toml` | Enables Codex hooks. |
 | `.codex/hooks.json` | Registers hook commands. |
+| `.codex/hooks/run-profile.sh` | Dispatches optional hook profiles for Codex hooks and pre-commit. |
 | `.codex/hooks/tdd-guard.sh` | Optional pre-edit guard for implementation files. |
 | `.githooks/pre-commit` | Lightweight template validation hook. |
 | `docs/PRD.md` | Product requirements template for the target project. |
@@ -215,6 +216,34 @@ python3 scripts/execute.py {phase-name} --push
 ```bash
 .githooks/pre-commit
 ```
+
+## Hook Profiles
+
+Hook profiles are opt-in wrappers around portable checks. The default profile is `minimal`, which keeps the base template behavior lightweight:
+
+- Python syntax for harness scripts
+- script unit tests
+- JSON validity for repository JSON files
+
+Select a profile for one command:
+
+```bash
+HARNESS_HOOK_PROFILE=phase-metadata .githooks/pre-commit
+HARNESS_HOOK_PROFILE=strict .githooks/pre-commit
+```
+
+You can also set `CODEX_HOOK_PROFILE` for Codex-specific use, or put one profile name in `.codex/hook-profile.local` for a local default. `.codex/hook-profile.local` is intentionally ignored by git.
+
+Available profiles:
+
+| Profile | Behavior |
+| --- | --- |
+| `minimal` | Runs template validation only. This is the default. |
+| `json-valid` | Alias for the default template validation, which includes JSON validation. |
+| `phase-metadata` | Runs template validation and validates every phase registered in `phases/index.json`. |
+| `no-secrets` | Runs template validation and scans tracked text files for obvious secret patterns. |
+| `tdd` | Runs template validation; Codex pre-edit hooks also run `.codex/hooks/tdd-guard.sh`. |
+| `strict` | Enables phase metadata validation, secret scan, and Codex pre-edit TDD guard. |
 
 ## Adapting The Template
 

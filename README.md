@@ -11,6 +11,7 @@ This repository contains only the harness pieces. It does not include a web app,
 .agents/skills/review/SKILL.md    # Review workflow for local changes
 .codex/config.toml                # Codex hook feature flags
 .codex/hooks.json                 # Hook registration
+.codex/hooks/run-profile.sh       # Optional hook profile dispatcher
 .codex/hooks/tdd-guard.sh         # Optional implementation edit guard
 .githooks/pre-commit              # Template validation hook
 docs/PRD.md                       # Product requirements template
@@ -84,6 +85,34 @@ Use `scripts/report_phase.py` to summarize phase status without opening JSON man
 ```
 
 The optional pre-commit hook checks Python syntax, runs script unit tests, and validates JSON files.
+
+## Hook Profiles
+
+Hook profiles keep stricter local workflow checks opt-in. The default `minimal` profile runs the template validation above and does not block Codex edits.
+
+Select a profile per command:
+
+```bash
+HARNESS_HOOK_PROFILE=phase-metadata .githooks/pre-commit
+HARNESS_HOOK_PROFILE=strict .githooks/pre-commit
+```
+
+For Codex pre-edit hooks, `tdd` and `strict` enable `.codex/hooks/tdd-guard.sh`:
+
+```bash
+HARNESS_HOOK_PROFILE=tdd codex
+```
+
+For a local default, put one profile name in `.codex/hook-profile.local`. That file is ignored by git.
+
+Profiles:
+
+- `minimal`: Python syntax, script unit tests, and JSON validity.
+- `json-valid`: alias for the default template validation.
+- `phase-metadata`: default validation plus registered phase metadata validation.
+- `no-secrets`: default validation plus a lightweight tracked-file secret scan.
+- `tdd`: default validation, plus Codex pre-edit TDD guard.
+- `strict`: default validation, phase metadata validation, secret scan, and Codex pre-edit TDD guard.
 
 ## Growing Your Own Harness
 

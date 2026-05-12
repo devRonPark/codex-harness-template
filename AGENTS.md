@@ -12,6 +12,7 @@ It intentionally does not include an application scaffold, package manager setup
 - `.agents/skills/review/SKILL.md`: review checklist for changes made through the harness.
 - `.codex/config.toml`: enables Codex hooks.
 - `.codex/hooks.json`: registers local hook commands.
+- `.codex/hooks/run-profile.sh`: dispatches optional hook profiles for Codex hooks and pre-commit.
 - `.codex/hooks/tdd-guard.sh`: optional TDD guard for implementation edits.
 - `.githooks/pre-commit`: template-level validation hook.
 - `scripts/create_phase.py`: phase scaffold generator.
@@ -125,4 +126,10 @@ Run a phase and push its branch:
 
 ```bash
 python3 scripts/execute.py {phase-name} --push
+```
+
+Run stricter opt-in hook checks:
+
+```bash
+HARNESS_HOOK_PROFILE=strict .githooks/pre-commit
 ```
