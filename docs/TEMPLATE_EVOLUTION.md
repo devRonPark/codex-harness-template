@@ -10,6 +10,7 @@ The current template is intentionally small:
 - phase registry in `phases/index.json`
 - phase scaffold generation through `scripts/create_phase.py`
 - phase metadata validation through `scripts/validate_phase.py`
+- read-only executor dry-run through `scripts/execute.py --dry-run`
 - self-contained step prompts in `phases/{phase-name}/step{N}.md`
 - project contract templates in `docs/`
 - Codex skill files in `.agents/skills/`
@@ -77,18 +78,24 @@ Checks:
 
 Goal: inspect what would run without invoking Codex.
 
-Possible command:
+Status: implemented in `scripts/execute.py --dry-run`.
+
+Command:
 
 ```bash
 python3 scripts/execute.py example-phase --dry-run
 ```
 
-Dry run should print:
+Dry run prints:
 
 - target branch
 - next pending step
 - files that will be read
-- validation warnings
+- validation result
+- completed previous step summaries
+- Codex execution preview
+
+Dry run does not invoke Codex, checkout or create branches, write timestamps, or create output JSON.
 
 ### 4. Add Execution Report
 
@@ -134,7 +141,6 @@ Good additions:
 ## Backlog
 
 - `scripts/report_phase.py`
-- `--dry-run` for `scripts/execute.py`
 - `--max-retries` override for `scripts/execute.py`
 - configurable sandbox and approval policy
 - optional JSON schema for phase metadata

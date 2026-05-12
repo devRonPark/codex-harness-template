@@ -108,6 +108,12 @@ Run a phase:
 python3 scripts/execute.py {phase-name}
 ```
 
+Preview a phase without invoking Codex:
+
+```bash
+python3 scripts/execute.py {phase-name} --dry-run
+```
+
 Run a phase and push its branch:
 
 ```bash

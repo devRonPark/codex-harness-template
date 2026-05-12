@@ -19,6 +19,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
+import validate_phase
+
 ROOT = Path(__file__).resolve().parent.parent
 
 
@@ -58,9 +60,10 @@ class StepExecutor:
     CHORE_MSG = "chore({phase}): step {num} output"
     TZ = timezone(timedelta(hours=9))
 
-    def __init__(self, phase_dir_name: str, *, auto_push: bool = False):
-        self._root = str(ROOT)
-        self._phases_dir = ROOT / "phases"
+    def __init__(self, phase_dir_name: str, *, auto_push: bool = False, root: Path | str = ROOT):
+        self._root_path = Path(root)
+        self._root = str(self._root_path)
+        self._phases_dir = self._root_path / "phases"
         self._phase_dir = self._phases_dir / phase_dir_name
         self._phase_dir_name = phase_dir_name
         self._top_index_file = self._phases_dir / "index.json"
@@ -184,10 +187,10 @@ class StepExecutor:
 
     def _load_guardrails(self) -> str:
         sections = []
-        agents_md = ROOT / "AGENTS.md"
+        agents_md = self._root_path / "AGENTS.md"
         if agents_md.exists():
             sections.append(f"## 프로젝트 규칙 (AGENTS.md)\n\n{agents_md.read_text()}")
-        docs_dir = ROOT / "docs"
+        docs_dir = self._root_path / "docs"
         if docs_dir.is_dir():
             for doc in sorted(docs_dir.glob("*.md")):
                 sections.append(f"## {doc.stem}\n\n{doc.read_text()}")
@@ -423,14 +426,116 @@ class StepExecutor:
         print(f"{'='*60}")
 
 
-def main():
+def dry_run_phase(root: Path | str, phase_dir_name: str, *, auto_push: bool = False) -> int:
+    root_path = Path(root)
+    result = validate_phase.validate_phase(root_path, phase_dir_name)
+    phase_dir = root_path / "phases" / phase_dir_name
+    index_file = phase_dir / "index.json"
+    phase_index = _read_json_if_possible(index_file)
+    steps = phase_index.get("steps", []) if isinstance(phase_index.get("steps"), list) else []
+
+    print(f"\n{'='*60}")
+    print("  Harness Step Executor Dry Run")
+    print(f"  Phase: {phase_dir_name} | Steps: {len(steps) if steps else 'unknown'}")
+    print(f"  Target branch: feat-{phase_dir_name}")
+    if auto_push:
+        print("  Auto-push: would be enabled after successful execution")
+    print(f"{'='*60}")
+
+    if result.valid:
+        print("Validation: OK")
+    else:
+        print("Validation: ERROR")
+        sys.stdout.flush()
+        for error in result.errors:
+            print(f"- {error}", file=sys.stderr)
+        print("\nCodex will not be invoked.")
+        return 1
+
+    next_step = next((step for step in steps if step.get("status") == "pending"), None)
+    completed = [
+        step
+        for step in steps
+        if step.get("status") == "completed" and isinstance(step.get("summary"), str)
+    ]
+
+    if next_step is None:
+        print("Next pending step: none")
+    else:
+        step_num = next_step["step"]
+        step_name = next_step["name"]
+        step_file = phase_dir / f"step{step_num}.md"
+        print(f"Next pending step: {step_num} ({step_name})")
+        print(f"Step prompt: {relative_path(root_path, step_file)}")
+
+    if completed:
+        print("\nCompleted step summaries:")
+        for step in completed:
+            print(f"- Step {step['step']} ({step['name']}): {step['summary']}")
+
+    print("\nFiles that would be read:")
+    for path in dry_run_read_paths(root_path, phase_dir_name, next_step):
+        print(f"- {relative_path(root_path, path)}")
+
+    print("\nCodex execution preview:")
+    if next_step is None:
+        print("- no pending Codex invocation")
+    else:
+        print("- command: codex exec --json --sandbox danger-full-access ...")
+        print("- prompt: AGENTS.md/docs context + completed summaries + pending step prompt")
+    print("- Codex will not be invoked.")
+    print("- No files will be changed.")
+    return 0
+
+
+def dry_run_read_paths(root: Path, phase_dir_name: str, next_step: dict | None) -> list[Path]:
+    paths = []
+    agents_md = root / "AGENTS.md"
+    if agents_md.exists():
+        paths.append(agents_md)
+
+    docs_dir = root / "docs"
+    if docs_dir.is_dir():
+        paths.extend(sorted(docs_dir.glob("*.md")))
+
+    phase_dir = root / "phases" / phase_dir_name
+    paths.append(phase_dir / "index.json")
+    if next_step is not None:
+        paths.append(phase_dir / f"step{next_step['step']}.md")
+    return paths
+
+
+def _read_json_if_possible(path: Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def relative_path(root: Path, path: Path) -> str:
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return path.as_posix()
+
+
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Harness Step Executor")
     parser.add_argument("phase_dir", help="Phase directory name (e.g. example-phase)")
     parser.add_argument("--push", action="store_true", help="Push branch after completion")
-    args = parser.parse_args()
+    parser.add_argument("--dry-run", action="store_true", help="Preview execution without invoking Codex")
+    parser.add_argument("--root", default=str(ROOT), help="Repository root. Defaults to this repo.")
+    args = parser.parse_args(argv)
 
-    StepExecutor(args.phase_dir, auto_push=args.push).run()
+    if args.dry_run:
+        return dry_run_phase(Path(args.root), args.phase_dir, auto_push=args.push)
+
+    StepExecutor(args.phase_dir, auto_push=args.push, root=Path(args.root)).run()
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

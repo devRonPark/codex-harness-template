@@ -40,7 +40,13 @@ python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,
 python3 scripts/validate_phase.py {phase-name}
 ```
 
-5. Run the phase executor:
+5. Preview what the executor would run:
+
+```bash
+python3 scripts/execute.py {phase-name} --dry-run
+```
+
+6. Run the phase executor:
 
 ```bash
 python3 scripts/execute.py {phase-name}
@@ -59,6 +65,8 @@ python3 scripts/execute.py {phase-name} --push
 - Python 3.
 
 `scripts/execute.py` creates or checks out `feat-{phase-name}`, invokes `codex exec` for each pending step, updates phase metadata, and commits code changes separately from harness metadata.
+
+Use `--dry-run` to validate metadata and inspect the target branch, next pending step, step prompt path, and files the executor would read. Dry-run mode does not invoke Codex, checkout branches, write timestamps, or create output files.
 
 ## Template Validation
 

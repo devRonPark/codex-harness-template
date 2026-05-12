@@ -109,6 +109,14 @@ python3 scripts/validate_phase.py example-phase
 
 The validator checks registry entries, phase naming, contiguous step numbers, required step prompt files, allowed statuses, and required status detail fields.
 
+Preview a phase without invoking Codex:
+
+```bash
+python3 scripts/execute.py example-phase --dry-run
+```
+
+Dry-run mode reuses the phase validator, prints the target branch, next pending step, step prompt path, completed step summaries, and files the executor would read. It does not invoke Codex, checkout or create branches, write timestamps, or create output JSON.
+
 ## Step Prompt Format
 
 Each generated step lives at `phases/{phase-name}/step{N}.md`.
@@ -155,6 +163,12 @@ Describe the concrete implementation work. Include file paths, required interfac
 
 Initialize Git before executing a phase. The executor creates or checks out `feat-{phase-name}`.
 
+Preview the next execution first:
+
+```bash
+python3 scripts/execute.py {phase-name} --dry-run
+```
+
 ```bash
 python3 scripts/execute.py {phase-name}
 ```
@@ -169,6 +183,7 @@ python3 scripts/execute.py {phase-name} --push
 
 `scripts/execute.py`:
 
+- supports `--dry-run` for read-only validation and execution preview
 - checks for `phases/{phase-name}/index.json`
 - creates or checks out `feat-{phase-name}`
 - injects `AGENTS.md` and `docs/*.md` into each step prompt

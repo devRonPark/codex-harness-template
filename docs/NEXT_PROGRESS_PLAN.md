@@ -123,6 +123,13 @@ scaffolder 다음에 validator가 필요한 이유는 "잘 만든다"와 "실행
 
 validator가 먼저 있어야 dry-run이 의미 있다. dry-run은 "검증 결과 + 다음 실행 계획"을 보여주는 역할을 맡는다.
 
+현재 메모:
+
+- `scripts/execute.py`에 `--dry-run`이 추가되었다.
+- dry-run은 `validate_phase.validate_phase(...)`를 재사용한다.
+- dry-run은 대상 branch, 다음 pending step, step prompt 파일, 이전 completed summary, 읽을 파일, Codex 실행 개요를 출력한다.
+- dry-run은 Codex를 호출하지 않고 branch checkout/create, timestamp 기록, output JSON 생성을 하지 않는다.
+
 dry-run에서 보여줄 정보:
 
 - 대상 phase
@@ -251,6 +258,6 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 ## Current Priority
 
-다음으로 이어갈 우선순위는 `Step 3. Executor Dry Run`이다.
+다음으로 이어갈 우선순위는 `Step 4. Phase Report`이다.
 
-`Step 1. Phase Scaffolder`와 `Step 2. Phase Metadata Validator`는 현재 저장소에 존재한다. 다음 작업자는 먼저 `scripts/execute.py`가 validator 결과를 재사용할 수 있는지 확인한 뒤 `--dry-run` 동작을 추가하는 것이 자연스럽다.
+`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`은 현재 저장소에 존재한다. 다음 작업자는 dry-run과 validator가 보여주는 상태 정보를 바탕으로 `scripts/report_phase.py`를 추가하는 것이 자연스럽다.
