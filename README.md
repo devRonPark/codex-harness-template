@@ -21,6 +21,7 @@ docs/TEMPLATE_EVOLUTION.md        # Personalization roadmap
 phases/index.json                 # Phase registry
 scripts/create_phase.py           # Phase scaffold generator
 scripts/validate_phase.py         # Phase metadata validator
+scripts/report_phase.py           # Phase status reporter
 scripts/execute.py                # Codex phase executor
 ```
 
@@ -46,7 +47,13 @@ python3 scripts/validate_phase.py {phase-name}
 python3 scripts/execute.py {phase-name} --dry-run
 ```
 
-6. Run the phase executor:
+6. Check phase status when needed:
+
+```bash
+python3 scripts/report_phase.py {phase-name}
+```
+
+7. Run the phase executor:
 
 ```bash
 python3 scripts/execute.py {phase-name}
@@ -67,6 +74,8 @@ python3 scripts/execute.py {phase-name} --push
 `scripts/execute.py` creates or checks out `feat-{phase-name}`, invokes `codex exec` for each pending step, updates phase metadata, and commits code changes separately from harness metadata.
 
 Use `--dry-run` to validate metadata and inspect the target branch, next pending step, step prompt path, and files the executor would read. Dry-run mode does not invoke Codex, checkout branches, write timestamps, or create output files.
+
+Use `scripts/report_phase.py` to summarize phase status without opening JSON manually. The report shows step counts, the next pending step, latest completed summary, blocker/error details, and existing output artifact paths.
 
 ## Template Validation
 

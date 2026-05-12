@@ -11,6 +11,7 @@ The current template is intentionally small:
 - phase scaffold generation through `scripts/create_phase.py`
 - phase metadata validation through `scripts/validate_phase.py`
 - read-only executor dry-run through `scripts/execute.py --dry-run`
+- phase status reporting through `scripts/report_phase.py`
 - self-contained step prompts in `phases/{phase-name}/step{N}.md`
 - project contract templates in `docs/`
 - Codex skill files in `.agents/skills/`
@@ -101,18 +102,21 @@ Dry run does not invoke Codex, checkout or create branches, write timestamps, or
 
 Goal: summarize phase state without reading JSON manually.
 
-Possible command:
+Status: implemented in `scripts/report_phase.py`.
+
+Command:
 
 ```bash
 python3 scripts/report_phase.py example-phase
 ```
 
-Useful output:
+Output:
 
 - completed / pending / blocked / error counts
 - latest completed step summary
 - next pending step
-- raw output artifact paths
+- blocked reason or error message when present
+- existing raw output artifact paths
 
 ### 5. Add Optional Hook Profiles
 
@@ -140,7 +144,6 @@ Good additions:
 
 ## Backlog
 
-- `scripts/report_phase.py`
 - `--max-retries` override for `scripts/execute.py`
 - configurable sandbox and approval policy
 - optional JSON schema for phase metadata

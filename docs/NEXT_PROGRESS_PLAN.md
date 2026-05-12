@@ -162,6 +162,12 @@ phase가 길어지면 JSON을 직접 열어보며 진행 상태를 파악하기 
 
 dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중간 상태 파악이 두 번째 문제이기 때문이다. 처음부터 report를 만들 수는 있지만, phase 생성과 실행 안정성이 먼저다.
 
+현재 메모:
+
+- `scripts/report_phase.py`가 추가되었다.
+- report는 `validate_phase.validate_phase(...)`를 재사용한다.
+- report는 phase status, completed/pending/blocked/error step count, next pending step, latest completed summary, blocked/error detail, existing output artifact path를 출력한다.
+
 리포트에 포함할 정보:
 
 - phase status
@@ -258,6 +264,6 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 ## Current Priority
 
-다음으로 이어갈 우선순위는 `Step 4. Phase Report`이다.
+다음으로 이어갈 우선순위는 `Step 5. Hook Profiles`이다.
 
-`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`은 현재 저장소에 존재한다. 다음 작업자는 dry-run과 validator가 보여주는 상태 정보를 바탕으로 `scripts/report_phase.py`를 추가하는 것이 자연스럽다.
+`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`는 현재 저장소에 존재한다. 다음 작업자는 기본 동작을 product-neutral하게 유지하면서 optional hook profile을 설계하는 것이 자연스럽다.

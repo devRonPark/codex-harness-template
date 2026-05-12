@@ -32,6 +32,7 @@ The template is useful for:
 | `phases/index.json` | Top-level phase registry. |
 | `scripts/create_phase.py` | Phase scaffold generator. |
 | `scripts/validate_phase.py` | Phase metadata validator. |
+| `scripts/report_phase.py` | Phase status reporter. |
 | `scripts/execute.py` | Executor that runs pending phase steps through Codex. |
 
 ## Phase Registry
@@ -117,6 +118,14 @@ python3 scripts/execute.py example-phase --dry-run
 
 Dry-run mode reuses the phase validator, prints the target branch, next pending step, step prompt path, completed step summaries, and files the executor would read. It does not invoke Codex, checkout or create branches, write timestamps, or create output JSON.
 
+Report phase status without opening JSON manually:
+
+```bash
+python3 scripts/report_phase.py example-phase
+```
+
+The report shows phase status, completed/pending/blocked/error counts, next pending step, latest completed summary, blocker/error details, and existing output artifact paths.
+
 ## Step Prompt Format
 
 Each generated step lives at `phases/{phase-name}/step{N}.md`.
@@ -167,6 +176,12 @@ Preview the next execution first:
 
 ```bash
 python3 scripts/execute.py {phase-name} --dry-run
+```
+
+Check current phase status:
+
+```bash
+python3 scripts/report_phase.py {phase-name}
 ```
 
 ```bash
