@@ -30,6 +30,7 @@ The template is useful for:
 | `docs/ARCHITECTURE.md` | Architecture template for the target project. |
 | `docs/ADR.md` | Architecture decision record template. |
 | `docs/NEXT_PROGRESS_PLAN.md` | Ordered harness evolution plan for preserving branch-to-branch context. |
+| `docs/HARNESS_ADVANCEMENT_ROADMAP.md` | Research-backed roadmap for the next harness improvements. |
 | `phases/index.json` | Top-level phase registry. |
 | `scripts/create_phase.py` | Phase scaffold generator. |
 | `scripts/validate_phase.py` | Phase metadata validator. |
@@ -255,3 +256,5 @@ For a new project:
 4. Execute only after the phase plan is reviewed.
 
 Keep this repository clean: do not add generated caches, dependency directories, build outputs, local reports, or secrets.
+
+For the next improvement sequence, read `docs/HARNESS_ADVANCEMENT_ROADMAP.md`. It keeps the current baseline separate from future work such as review rubrics, richer step templates, run ledgers, executor configuration, schema validation, worktree isolation, and later parallel execution.

@@ -19,6 +19,7 @@ docs/ARCHITECTURE.md              # Architecture template
 docs/ADR.md                       # Decision record template
 docs/HARNESS_TEMPLATE_SUMMARY.md  # Template usage guide
 docs/TEMPLATE_EVOLUTION.md        # Personalization roadmap
+docs/HARNESS_ADVANCEMENT_ROADMAP.md  # Next improvement roadmap
 phases/index.json                 # Phase registry
 scripts/create_phase.py           # Phase scaffold generator
 scripts/validate_phase.py         # Phase metadata validator
@@ -117,3 +118,5 @@ Profiles:
 ## Growing Your Own Harness
 
 Use [docs/TEMPLATE_EVOLUTION.md](docs/TEMPLATE_EVOLUTION.md) as the working map for evolving this base template. Keep the base lean, add one capability at a time, and record stable decisions in `docs/ADR.md`.
+
+Use [docs/HARNESS_ADVANCEMENT_ROADMAP.md](docs/HARNESS_ADVANCEMENT_ROADMAP.md) for the next research-backed improvement sequence after the current baseline.

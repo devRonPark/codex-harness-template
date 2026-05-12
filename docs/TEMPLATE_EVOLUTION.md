@@ -161,6 +161,23 @@ Good additions:
 - phase metadata checks
 - rules for when to run validation
 
+## Post-Baseline Roadmap
+
+The first six items above form the initial baseline for a product-neutral harness. The next roadmap is tracked in `docs/HARNESS_ADVANCEMENT_ROADMAP.md`.
+
+Recommended next sequence:
+
+1. personal review rubric
+2. step template v2
+3. phase run ledger
+4. executor configuration
+5. phase metadata schema
+6. worktree isolation
+7. dependency-aware parallel execution
+8. portable packaging
+
+The roadmap is intentionally ordered from safer sequential workflow improvements toward later parallel execution. Do not start with orchestration or packaging before the review, step, and run-history surfaces are stronger.
+
 ## Backlog
 
 - `--max-retries` override for `scripts/execute.py`
