@@ -70,10 +70,12 @@ python3 scripts/execute.py {phase-name} --push
 ## Requirements
 
 - Git repository initialized before running `scripts/execute.py`.
+- Clean worktree before running `scripts/execute.py`; commit, stash, or remove unrelated local changes first.
 - Codex CLI available as `codex`.
 - Python 3.
 
 `scripts/execute.py` creates or checks out `feat-{phase-name}`, invokes `codex exec` for each pending step, updates phase metadata, and commits code changes separately from harness metadata.
+The executor refuses to start from a dirty worktree and stages only the changed paths it observes during the run instead of using a repository-wide `git add -A`.
 
 Use `--dry-run` to validate metadata and inspect the target branch, next pending step, step prompt path, and files the executor would read. Dry-run mode does not invoke Codex, checkout branches, write timestamps, or create output files.
 

@@ -39,3 +39,15 @@ Record architecture decisions for the target project here. Keep decisions short,
 **Tradeoffs**: The rubric depends on reviewer judgment and does not automate quality gates. Future template work can add stronger validation only after repeated real usage shows which checks are worth automating.
 
 **Status**: Accepted
+
+### ADR-003: Clean Worktree Phase Execution
+
+**Decision**: `scripts/execute.py` refuses to run a phase when the Git worktree is dirty. During execution it stages changed paths explicitly instead of using repository-wide `git add -A`.
+
+**Context**: A phase step should commit only the files produced by that step and the related harness metadata. If unrelated local files already exist, broad staging can accidentally include local notes, generated caches, or other out-of-scope artifacts.
+
+**Reasoning**: Requiring a clean worktree gives the executor a clear baseline. Staging only observed changed paths keeps commit behavior explicit while preserving the existing split between implementation commits and harness metadata commits.
+
+**Tradeoffs**: Users must commit, stash, or remove local changes before running a phase. This is stricter than the previous behavior, but it prevents ambiguous ownership and keeps phase execution repeatable.
+
+**Status**: Accepted

@@ -173,6 +173,9 @@ Describe the concrete implementation work. Include file paths, required interfac
 ## Running A Phase
 
 Initialize Git before executing a phase. The executor creates or checks out `feat-{phase-name}`.
+The worktree must be clean before execution; commit, stash, or remove unrelated
+local changes first. This keeps phase commits scoped to the active step and
+prevents local-only files from being swept into executor commits.
 
 Preview the next execution first:
 
@@ -209,7 +212,8 @@ python3 scripts/execute.py {phase-name} --push
 - stores raw step output as `phases/{phase-name}/step{N}-output.json`
 - retries failed steps up to three times
 - records timestamps
-- commits code changes and harness metadata separately
+- commits code changes and harness metadata separately using the changed paths
+  observed during execution
 - updates `phases/index.json` when the phase completes, errors, or blocks
 
 ## Template Validation

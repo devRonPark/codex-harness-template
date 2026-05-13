@@ -86,6 +86,7 @@ class StepExecutor:
     def run(self):
         self._print_header()
         self._check_blockers()
+        self._ensure_clean_worktree()
         self._checkout_branch()
         guardrails = self._load_guardrails()
         self._ensure_created_at()
@@ -112,6 +113,44 @@ class StepExecutor:
     def _run_git(self, *args) -> subprocess.CompletedProcess:
         cmd = ["git"] + list(args)
         return subprocess.run(cmd, cwd=self._root, capture_output=True, text=True)
+
+    def _worktree_status(self) -> list[str]:
+        r = self._run_git("status", "--porcelain", "--untracked-files=all")
+        if r.returncode != 0:
+            print("  ERROR: git status failed.")
+            print(f"  {r.stderr.strip()}")
+            sys.exit(1)
+        return [line for line in r.stdout.splitlines() if line.strip()]
+
+    def _ensure_clean_worktree(self):
+        dirty = self._worktree_status()
+        if not dirty:
+            return
+
+        print("\n  ERROR: worktree is not clean.")
+        print("  Commit, stash, or remove unrelated local changes before running a phase.")
+        print("  Dirty paths:")
+        for line in dirty:
+            print(f"  {line}")
+        sys.exit(3)
+
+    def _changed_paths(self) -> list[str]:
+        paths: list[str] = []
+        for line in self._worktree_status():
+            if len(line) < 4:
+                continue
+            path = line[3:]
+            if " -> " in path:
+                old_path, new_path = path.split(" -> ", 1)
+                paths.extend([old_path, new_path])
+            else:
+                paths.append(path)
+        return paths
+
+    def _stage_changed_paths(self):
+        paths = self._changed_paths()
+        if paths:
+            self._run_git("add", "--", *paths)
 
     def _checkout_branch(self):
         branch = f"feat-{self._phase_name}"
@@ -144,7 +183,7 @@ class StepExecutor:
         index_rel = f"phases/{self._phase_dir_name}/index.json"
         has_head = self._run_git("rev-parse", "--verify", "HEAD").returncode == 0
 
-        self._run_git("add", "-A")
+        self._stage_changed_paths()
         if has_head:
             self._run_git("reset", "HEAD", "--", output_rel)
             self._run_git("reset", "HEAD", "--", index_rel)
@@ -160,7 +199,7 @@ class StepExecutor:
             else:
                 print(f"  WARN: 코드 커밋 실패: {r.stderr.strip()}")
 
-        self._run_git("add", "-A")
+        self._stage_changed_paths()
         if self._run_git("diff", "--cached", "--quiet").returncode != 0:
             msg = self.CHORE_MSG.format(phase=self._phase_name, num=step_num)
             r = self._run_git("commit", "-m", msg)
@@ -406,7 +445,7 @@ class StepExecutor:
         self._write_json(self._index_file, index)
         self._update_top_index("completed")
 
-        self._run_git("add", "-A")
+        self._stage_changed_paths()
         if self._run_git("diff", "--cached", "--quiet").returncode != 0:
             msg = f"chore({self._phase_name}): mark phase completed"
             r = self._run_git("commit", "-m", msg)

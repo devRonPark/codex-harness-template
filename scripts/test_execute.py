@@ -16,6 +16,36 @@ def write_json(path: Path, data: dict) -> None:
     path.write_text(f"{json.dumps(data, indent=2)}\n", encoding="utf-8")
 
 
+def init_git_repo(root: Path) -> None:
+    execute.subprocess.run(["git", "init"], cwd=root, check=True, capture_output=True, text=True)
+    execute.subprocess.run(["git", "config", "user.email", "test@example.invalid"], cwd=root, check=True)
+    execute.subprocess.run(["git", "config", "user.name", "Harness Test"], cwd=root, check=True)
+
+
+def commit_all(root: Path, message: str = "initial commit") -> None:
+    execute.subprocess.run(["git", "add", "."], cwd=root, check=True)
+    execute.subprocess.run(["git", "commit", "-m", message], cwd=root, check=True, capture_output=True, text=True)
+
+
+def write_minimal_phase(root: Path, phase_name: str = "demo-phase") -> None:
+    (root / "AGENTS.md").write_text("# Project: Demo Harness\n", encoding="utf-8")
+    (root / "docs").mkdir()
+    (root / "docs" / "PRD.md").write_text("# PRD\n", encoding="utf-8")
+    write_json(
+        root / "phases" / "index.json",
+        {"phases": [{"dir": phase_name, "status": "pending"}]},
+    )
+    write_json(
+        root / "phases" / phase_name / "index.json",
+        {
+            "project": "Demo Harness",
+            "phase": phase_name,
+            "steps": [{"step": 0, "name": "first-step", "status": "pending"}],
+        },
+    )
+    (root / "phases" / phase_name / "step0.md").write_text("# Step 0\n", encoding="utf-8")
+
+
 class ExecuteDryRunTests(unittest.TestCase):
     def test_dry_run_reports_next_pending_step_without_writing_files(self):
         with TemporaryDirectory() as tmp:
@@ -77,6 +107,28 @@ class ExecuteDryRunTests(unittest.TestCase):
             self.assertIn("Validation: ERROR", stdout.getvalue())
             self.assertIn("phases/index.json has no entry for phase 'missing-phase'", stderr.getvalue())
             self.assertIn("phase directory not found: phases/missing-phase", stderr.getvalue())
+
+
+class ExecuteWorktreeSafetyTests(unittest.TestCase):
+    def test_executor_refuses_dirty_worktree_before_running_steps(self):
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            write_minimal_phase(root)
+            init_git_repo(root)
+            commit_all(root)
+            (root / ".claude").mkdir()
+            (root / ".claude" / "plan-progress.md").write_text("local only\n", encoding="utf-8")
+
+            stdout = StringIO()
+            executor = execute.StepExecutor("demo-phase", root=root)
+
+            with redirect_stdout(stdout), self.assertRaises(SystemExit) as raised:
+                executor.run()
+
+            self.assertEqual(raised.exception.code, 3)
+            output = stdout.getvalue()
+            self.assertIn("ERROR: worktree is not clean", output)
+            self.assertIn("?? .claude/plan-progress.md", output)
 
 
 if __name__ == "__main__":
