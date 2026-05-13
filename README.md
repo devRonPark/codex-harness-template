@@ -79,6 +79,19 @@ Use `--dry-run` to validate metadata and inspect the target branch, next pending
 
 Use `scripts/report_phase.py` to summarize phase status without opening JSON manually. The report shows step counts, the next pending step, latest completed summary, blocker/error details, and existing output artifact paths.
 
+## Review Rubric
+
+Use `.agents/skills/review/SKILL.md` when reviewing harness-driven changes. The
+rubric keeps reviews findings-first and assigns `P0` to `P3` severities:
+
+- `P0` and unresolved `P1` findings block completion.
+- `P2` findings can be fixed now or recorded as residual risk.
+- `P3` findings are polish and should not expand scope by default.
+
+The review output records verification evidence, residual risks, and a small
+harness checklist so a step can stop when the requested scope is complete and
+validated.
+
 ## Template Validation
 
 ```bash

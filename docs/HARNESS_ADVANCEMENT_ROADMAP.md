@@ -49,6 +49,10 @@ The most useful external examples point in the same direction: persist state in 
 
 Goal: make `.agents/skills/review/SKILL.md` reflect the desired review standard for harness-driven work.
 
+Status: implemented. The review skill now defines a `P0` to `P3` severity
+rubric, findings-first output, verification evidence, residual risks, and a
+stop condition for deciding when work is complete enough to stop.
+
 Scope:
 
 - add a small severity rubric, such as `P0`, `P1`, `P2`, `P3`
@@ -205,21 +209,16 @@ These ideas should stay out of the base template unless the template scope delib
 
 ## Near-Term Execution Order
 
-The next three implementation branches should stay small:
+The next two implementation branches should stay small:
 
-1. `feat-review-rubric`
-   - update `.agents/skills/review/SKILL.md`
-   - update docs that describe review expectations
-   - validate with existing script tests and `.githooks/pre-commit`
-
-2. `feat-step-template-v2`
+1. `feat-step-template-v2`
    - update `scripts/create_phase.py`
    - update step prompt docs
    - add tests for generated template content
 
-3. `feat-phase-run-ledger`
+2. `feat-phase-run-ledger`
    - add append-only execution events
    - extend report output
    - add tests for event creation and reporting
 
-After those three, revisit executor configuration and schema validation with the benefit of real usage data.
+After those two, revisit executor configuration and schema validation with the benefit of real usage data.

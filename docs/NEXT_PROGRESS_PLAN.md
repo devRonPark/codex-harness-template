@@ -226,6 +226,8 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 권장 브랜치: `feat-review-rubric`
 
+상태: 구현됨
+
 대상:
 
 - `.agents/skills/review/SKILL.md`
@@ -254,6 +256,14 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 - severity 기준이 구체적이다.
 - 하네스 작업에서 반복적으로 발생한 실제 문제를 반영한다.
 
+구현 메모:
+
+- `P0`은 executor 실행 불가, phase metadata 손상, secrets/cache 유입, destructive change처럼 완료를 막아야 하는 문제다.
+- `P1`은 validation 누락, 요청 범위 미완성, step scope 이탈, false completion metadata, product-neutral 정책 위반처럼 결과 신뢰도를 깨는 문제다.
+- `P2`는 문서/동작 불일치, 얇은 검증, 에러 메시지 품질 등 기록하거나 후속으로 넘길 수 있는 문제다.
+- `P3`는 표현, 포맷, 정리 같은 polish이며 기본적으로 완료를 막지 않는다.
+- 출력 구조는 findings, open questions, residual risks, verification, checklist, recommendations 순서를 따른다.
+
 ## Handoff Template
 
 각 브랜치 작업을 마칠 때 다음 내용을 PR description, commit message, 또는 별도 메모에 남긴다.
@@ -272,6 +282,6 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 ## Current Priority
 
-다음으로 이어갈 우선순위는 `Step 6. Personal Review Rubric`이다.
+다음으로 이어갈 우선순위는 실제 프로젝트에 이 하네스를 적용해 보고, 반복되는 불편이 확인된 뒤 `Step Template v2` 또는 `Phase Run Ledger` 중 하나를 선택하는 것이다.
 
-`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`, `Step 5. Hook Profiles`는 현재 저장소에 존재한다. 다음 작업자는 `.agents/skills/review/SKILL.md`를 중심으로 personal review rubric을 강화하는 것이 자연스럽다.
+`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`, `Step 5. Hook Profiles`, `Step 6. Personal Review Rubric`은 현재 저장소에 존재한다. 다음 작업자는 기능 추가 전에 실제 phase 실행 경험을 먼저 확인하는 것이 자연스럽다.

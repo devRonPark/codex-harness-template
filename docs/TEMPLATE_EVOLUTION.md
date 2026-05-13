@@ -154,6 +154,8 @@ Selection order:
 
 Goal: make `.agents/skills/review/SKILL.md` reflect how you personally want Codex work reviewed.
 
+Status: implemented in `.agents/skills/review/SKILL.md`.
+
 Good additions:
 
 - severity rubric
@@ -161,20 +163,27 @@ Good additions:
 - phase metadata checks
 - rules for when to run validation
 
+Implemented review standard:
+
+- `P0`: blocks safe completion, such as broken executor flow, invalid phase metadata, secrets, generated caches, or destructive changes.
+- `P1`: makes the result untrustworthy, such as missing validation evidence, incomplete requested work, scope drift, false completion metadata, or product-neutral policy violations.
+- `P2`: important maintainability or follow-up issue that can be fixed now or recorded as residual risk.
+- `P3`: minor polish that should not block completion by default.
+- Review output is findings-first and includes open questions, residual risks, verification evidence, a harness checklist, and focused recommendations.
+
 ## Post-Baseline Roadmap
 
 The first six items above form the initial baseline for a product-neutral harness. The next roadmap is tracked in `docs/HARNESS_ADVANCEMENT_ROADMAP.md`.
 
 Recommended next sequence:
 
-1. personal review rubric
-2. step template v2
-3. phase run ledger
-4. executor configuration
-5. phase metadata schema
-6. worktree isolation
-7. dependency-aware parallel execution
-8. portable packaging
+1. step template v2
+2. phase run ledger
+3. executor configuration
+4. phase metadata schema
+5. worktree isolation
+6. dependency-aware parallel execution
+7. portable packaging
 
 The roadmap is intentionally ordered from safer sequential workflow improvements toward later parallel execution. Do not start with orchestration or packaging before the review, step, and run-history surfaces are stronger.
 

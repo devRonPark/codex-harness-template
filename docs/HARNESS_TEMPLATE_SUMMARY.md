@@ -246,6 +246,26 @@ Available profiles:
 | `tdd` | Runs template validation; Codex pre-edit hooks also run `.codex/hooks/tdd-guard.sh`. |
 | `strict` | Enables phase metadata validation, secret scan, and Codex pre-edit TDD guard. |
 
+## Review Rubric
+
+`.agents/skills/review/SKILL.md` defines the completion review standard for
+harness-driven work. It uses a findings-first structure adapted from
+evidence-heavy agent harness reviews such as Ouroboros: severity-ranked
+findings, explicit verification, residual risks, and small recommendations.
+
+Severity levels:
+
+| Severity | Blocks Completion | Meaning |
+| --- | --- | --- |
+| `P0` | yes | The harness cannot safely run or metadata/repository state is corrupted. |
+| `P1` | yes, unless explicitly accepted | The result cannot be trusted because scope, validation, implementation, or completion metadata is wrong. |
+| `P2` | sometimes | The issue matters for maintainability or follow-up, but may be recorded as residual risk. |
+| `P3` | no | Minor polish that should not expand scope by default. |
+
+Stop when there are no unresolved `P0` or `P1` findings, validation evidence is
+adequate, and the work stays within the requested step scope. Record remaining
+`P2` risks instead of turning them into automatic new work.
+
 ## Adapting The Template
 
 For a new project:
@@ -257,4 +277,4 @@ For a new project:
 
 Keep this repository clean: do not add generated caches, dependency directories, build outputs, local reports, or secrets.
 
-For the next improvement sequence, read `docs/HARNESS_ADVANCEMENT_ROADMAP.md`. It keeps the current baseline separate from future work such as review rubrics, richer step templates, run ledgers, executor configuration, schema validation, worktree isolation, and later parallel execution.
+For the next improvement sequence, read `docs/HARNESS_ADVANCEMENT_ROADMAP.md`. It keeps the current baseline separate from future work such as richer step templates, run ledgers, executor configuration, schema validation, worktree isolation, and later parallel execution.
