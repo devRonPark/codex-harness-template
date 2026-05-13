@@ -1,137 +1,111 @@
 # Codex Harness Template
 
-Minimal template for running structured Codex implementation work through phase and step files.
+![Codex Harness Template hero](assets/readme-hero.png)
 
-This repository contains only the harness pieces. It does not include a web app, npm project, product implementation, provider integration, or completed demo phase.
+Minimal base for structured Codex implementation work: define the goal, split it into phase files, validate the metadata, preview the run, and execute each step with durable status tracking.
 
-## What Is Included
+This repository contains only the harness pieces. It does not include an application scaffold, package manager setup, framework dependency, provider integration, or a completed demo app.
 
-```text
-.agents/skills/harness/SKILL.md   # Harness planning and execution workflow
-.agents/skills/review/SKILL.md    # Review workflow for local changes
-.codex/config.toml                # Codex hook feature flags
-.codex/hooks.json                 # Hook registration
-.codex/hooks/run-profile.sh       # Optional hook profile dispatcher
-.codex/hooks/tdd-guard.sh         # Optional implementation edit guard
-.githooks/pre-commit              # Template validation hook
-docs/PRD.md                       # Product requirements template
-docs/ARCHITECTURE.md              # Architecture template
-docs/ADR.md                       # Decision record template
-docs/HARNESS_TEMPLATE_SUMMARY.md  # Template usage guide
-docs/TEMPLATE_EVOLUTION.md        # Personalization roadmap
-docs/HARNESS_ADVANCEMENT_ROADMAP.md  # Next improvement roadmap
-phases/index.json                 # Phase registry
-scripts/create_phase.py           # Phase scaffold generator
-scripts/validate_phase.py         # Phase metadata validator
-scripts/report_phase.py           # Phase status reporter
-scripts/execute.py                # Codex phase executor
-```
+## What This Gives You
 
-## Basic Flow
+- Phase scaffolding with `scripts/create_phase.py`
+- Phase metadata validation with `scripts/validate_phase.py`
+- Dry-run execution preview with `scripts/execute.py --dry-run`
+- Phase status reporting with `scripts/report_phase.py`
+- Self-contained step prompts with v2 execution context sections
+- Optional hook profiles for stricter local checks
+- A review rubric for harness-driven change review
+
+## Use This When
+
+- You want Codex to work through a project in explicit, reviewable steps
+- You need per-step execution state in repository files
+- You want future agents to resume from durable metadata instead of chat history
+
+## Avoid This When
+
+- You want a framework scaffold or application starter
+- You want product-specific API integration in the template itself
+- You need a demo app more than a harness
+
+## Quick Start
 
 1. Fill in `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/ADR.md` for the target project.
-2. Generate a phase scaffold:
+2. Create a phase scaffold:
 
 ```bash
 python3 scripts/create_phase.py example-phase --steps project-setup,core-domain,final-review
 ```
 
-3. Fill in the generated step files.
+3. Fill in the generated `phases/example-phase/step{N}.md` files.
 4. Validate the phase metadata:
 
 ```bash
-python3 scripts/validate_phase.py {phase-name}
+python3 scripts/validate_phase.py example-phase
 ```
 
-5. Preview what the executor would run:
+5. Preview the next execution:
 
 ```bash
-python3 scripts/execute.py {phase-name} --dry-run
+python3 scripts/execute.py example-phase --dry-run
 ```
 
-6. Check phase status when needed:
+6. Check progress when needed:
 
 ```bash
-python3 scripts/report_phase.py {phase-name}
+python3 scripts/report_phase.py example-phase
 ```
 
-7. Run the phase executor:
+7. Run the phase:
 
 ```bash
-python3 scripts/execute.py {phase-name}
+python3 scripts/execute.py example-phase
 ```
 
-To push the resulting branch:
+## Repository Map
 
-```bash
-python3 scripts/execute.py {phase-name} --push
-```
+| Path | Purpose |
+| --- | --- |
+| `AGENTS.md` | Operating rules for harness work. |
+| `.agents/skills/harness/SKILL.md` | Planning and execution workflow. |
+| `.agents/skills/review/SKILL.md` | Review rubric for harness-driven changes. |
+| `.codex/` | Codex hook configuration and profiles. |
+| `docs/PRD.md` | Product requirements template. |
+| `docs/ARCHITECTURE.md` | Architecture template. |
+| `docs/ADR.md` | Decision record template. |
+| `docs/HARNESS_TEMPLATE_GUIDE.md` | Detailed guide for using this template. |
+| `docs/HARNESS_TEMPLATE_SUMMARY.md` | Concise template summary and step format reference. |
+| `docs/HARNESS_ADVANCEMENT_ROADMAP.md` | Next harness improvement roadmap. |
+| `docs/NEXT_PROGRESS_PLAN.md` | Handoff-friendly next-step plan. |
+| `phases/index.json` | Top-level phase registry. |
+| `scripts/create_phase.py` | Phase scaffold generator. |
+| `scripts/validate_phase.py` | Phase metadata validator. |
+| `scripts/report_phase.py` | Phase status reporter. |
+| `scripts/execute.py` | Codex phase executor. |
+| `assets/readme-hero.png` | README hero image. |
 
-## Requirements
+## Validation And Execution
 
-- Git repository initialized before running `scripts/execute.py`.
-- Clean worktree before running `scripts/execute.py`; commit, stash, or remove unrelated local changes first.
-- Codex CLI available as `codex`.
-- Python 3.
-
-`scripts/execute.py` creates or checks out `feat-{phase-name}`, invokes `codex exec` for each pending step, updates phase metadata, and commits code changes separately from harness metadata.
-The executor refuses to start from a dirty worktree and stages only the changed paths it observes during the run instead of using a repository-wide `git add -A`.
-
-Use `--dry-run` to validate metadata and inspect the target branch, next pending step, step prompt path, and files the executor would read. Dry-run mode does not invoke Codex, checkout branches, write timestamps, or create output files.
-
-Use `scripts/report_phase.py` to summarize phase status without opening JSON manually. The report shows step counts, the next pending step, latest completed summary, blocker/error details, and existing output artifact paths.
-
-## Review Rubric
-
-Use `.agents/skills/review/SKILL.md` when reviewing harness-driven changes. The
-rubric keeps reviews findings-first and assigns `P0` to `P3` severities:
-
-- `P0` and unresolved `P1` findings block completion.
-- `P2` findings can be fixed now or recorded as residual risk.
-- `P3` findings are polish and should not expand scope by default.
-
-The review output records verification evidence, residual risks, and a small
-harness checklist so a step can stop when the requested scope is complete and
-validated.
-
-## Template Validation
+Run the template checks before execution:
 
 ```bash
 .githooks/pre-commit
 ```
 
-The optional pre-commit hook checks Python syntax, runs script unit tests, and validates JSON files.
+`scripts/execute.py` creates or checks out `feat-{phase-name}`, invokes `codex exec` for each pending step, writes phase metadata, and commits code changes separately from harness metadata. Use `--dry-run` to inspect the target branch, next pending step, step prompt path, and the files the executor would read.
 
-## Hook Profiles
+The executor expects a clean worktree. Commit, stash, or remove unrelated local changes before running a phase.
 
-Hook profiles keep stricter local workflow checks opt-in. The default `minimal` profile runs the template validation above and does not block Codex edits.
+## Customizing The Template
 
-Select a profile per command:
+1. Replace `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/ADR.md` with project-specific content.
+2. Create the first phase in `phases/index.json`.
+3. Generate self-contained step files and keep each one small enough for a single Codex execution.
+4. Use the guide in [docs/HARNESS_TEMPLATE_GUIDE.md](docs/HARNESS_TEMPLATE_GUIDE.md) for detailed workflow, README patterns, and adaptation notes.
 
-```bash
-HARNESS_HOOK_PROFILE=phase-metadata .githooks/pre-commit
-HARNESS_HOOK_PROFILE=strict .githooks/pre-commit
-```
+## Related Docs
 
-For Codex pre-edit hooks, `tdd` and `strict` enable `.codex/hooks/tdd-guard.sh`:
-
-```bash
-HARNESS_HOOK_PROFILE=tdd codex
-```
-
-For a local default, put one profile name in `.codex/hook-profile.local`. That file is ignored by git.
-
-Profiles:
-
-- `minimal`: Python syntax, script unit tests, and JSON validity.
-- `json-valid`: alias for the default template validation.
-- `phase-metadata`: default validation plus registered phase metadata validation.
-- `no-secrets`: default validation plus a lightweight tracked-file secret scan.
-- `tdd`: default validation, plus Codex pre-edit TDD guard.
-- `strict`: default validation, phase metadata validation, secret scan, and Codex pre-edit TDD guard.
-
-## Growing Your Own Harness
-
-Use [docs/TEMPLATE_EVOLUTION.md](docs/TEMPLATE_EVOLUTION.md) as the working map for evolving this base template. Keep the base lean, add one capability at a time, and record stable decisions in `docs/ADR.md`.
-
-Use [docs/HARNESS_ADVANCEMENT_ROADMAP.md](docs/HARNESS_ADVANCEMENT_ROADMAP.md) for the next research-backed improvement sequence after the current baseline.
+- [Harness Template Guide](docs/HARNESS_TEMPLATE_GUIDE.md)
+- [Harness Template Summary](docs/HARNESS_TEMPLATE_SUMMARY.md)
+- [Template Evolution Roadmap](docs/TEMPLATE_EVOLUTION.md)
+- [Harness Advancement Roadmap](docs/HARNESS_ADVANCEMENT_ROADMAP.md)

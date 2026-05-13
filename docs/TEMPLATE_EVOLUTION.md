@@ -13,7 +13,7 @@ The current template is intentionally small:
 - read-only executor dry-run through `scripts/execute.py --dry-run`
 - phase status reporting through `scripts/report_phase.py`
 - optional hook profiles through `.codex/hooks/run-profile.sh`
-- self-contained step prompts in `phases/{phase-name}/step{N}.md`
+- self-contained v2 step prompts in `phases/{phase-name}/step{N}.md`
 - project contract templates in `docs/`
 - Codex skill files in `.agents/skills/`
 - optional TDD guard hook
@@ -177,13 +177,17 @@ The first six items above form the initial baseline for a product-neutral harnes
 
 Recommended next sequence:
 
-1. step template v2
-2. phase run ledger
-3. executor configuration
-4. phase metadata schema
-5. worktree isolation
-6. dependency-aware parallel execution
-7. portable packaging
+1. phase run ledger
+2. executor configuration
+3. phase metadata schema
+4. worktree isolation
+5. dependency-aware parallel execution
+6. portable packaging
+
+Step template v2 is implemented in `scripts/create_phase.py`. Generated steps
+now include `Files To Edit`, `Expected Output`, `Evidence`, `Decision Notes`,
+and `Recovery` sections so a fresh execution agent has clearer write scope,
+observable completion criteria, validation evidence, and retry context.
 
 The roadmap is intentionally ordered from safer sequential workflow improvements toward later parallel execution. Do not start with orchestration or packaging before the review, step, and run-history surfaces are stronger.
 

@@ -42,7 +42,9 @@ It intentionally does not include an application scaffold, package manager setup
 - Step numbers start at `0`.
 - Step files must be self-contained because each step can run in a fresh Codex execution.
 - Each step must list the files to read before editing.
+- Each step should list the files it expects to edit.
 - Each step must include concrete acceptance criteria.
+- Each completed step should record validation evidence or a concrete success observation.
 - Each step must update its entry in `phases/{phase-name}/index.json`.
 
 ## Status Values

@@ -33,10 +33,12 @@ Step design rules:
 1. Keep each step small enough for one Codex execution.
 2. Make each step self-contained; do not rely on prior chat context.
 3. List the exact files the execution agent must read first.
-4. Specify interfaces, file paths, and constraints; avoid over-prescribing implementation details unless correctness requires it.
-5. Use executable acceptance criteria, such as project-specific test/build commands.
-6. Write specific warnings in the form "Do not do X. Reason: Y."
-7. Use short kebab-case step names.
+4. List the files the step is expected to edit, even if the list may need small adjustments during execution.
+5. Specify interfaces, file paths, and constraints; avoid over-prescribing implementation details unless correctness requires it.
+6. Use executable acceptance criteria, such as project-specific test/build commands.
+7. Require evidence: exact validation command output or a concrete success observation.
+8. Write specific warnings in the form "Do not do X. Reason: Y."
+9. Use short kebab-case step names.
 
 ## D. Create Files
 
@@ -109,9 +111,17 @@ Recommended step prompt:
 - `/docs/ADR.md`
 - {previous-step files if relevant}
 
+## Files To Edit
+
+- {Files this step is expected to modify.}
+
 ## Task
 
 {Concrete implementation instructions. Include file paths, required interfaces, behavioral constraints, and project boundaries.}
+
+## Expected Output
+
+{Repository state, command output, user-facing behavior, or artifact expected after completion.}
 
 ## Acceptance Criteria
 
@@ -119,11 +129,24 @@ Recommended step prompt:
 {project-specific validation command}
 ```
 
+## Evidence
+
+{Execution agent records exact validation command output or success observation here.}
+
+## Decision Notes
+
+{Implementation decisions or discoveries later steps need, or `N/A`.}
+
+## Recovery
+
+{How to preserve failure context and retry safely if the step fails.}
+
 ## Verification
 
 1. Run the acceptance criteria.
-2. Check that the change follows `ARCHITECTURE.md`, `ADR.md`, and `AGENTS.md`.
-3. Update `phases/{phase-name}/index.json`:
+2. Record validation evidence.
+3. Check that the change follows `ARCHITECTURE.md`, `ADR.md`, and `AGENTS.md`.
+4. Update `phases/{phase-name}/index.json`:
    - Success: set `status` to `completed` and add `summary`.
    - Failed after reasonable retries: set `status` to `error` and add `error_message`.
    - Needs user input: set `status` to `blocked` and add `blocked_reason`.

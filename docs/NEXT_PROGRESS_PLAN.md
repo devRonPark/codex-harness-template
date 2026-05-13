@@ -282,6 +282,101 @@ dry-run 이후에 두는 이유는 실행 전 확인보다 실행 후 또는 중
 
 ## Current Priority
 
-다음으로 이어갈 우선순위는 실제 프로젝트에 이 하네스를 적용해 보고, 반복되는 불편이 확인된 뒤 `Step Template v2` 또는 `Phase Run Ledger` 중 하나를 선택하는 것이다.
+다음으로 이어갈 우선순위는 `Phase Run Ledger`다. `Step Template v2`는
+`scripts/create_phase.py`와 관련 문서에 반영되었으므로, 이제 실행 시도
+이력을 파일로 남겨 긴 phase의 디버깅과 handoff 품질을 높이는 쪽이 자연스럽다.
 
-`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`, `Step 5. Hook Profiles`, `Step 6. Personal Review Rubric`은 현재 저장소에 존재한다. 다음 작업자는 기능 추가 전에 실제 phase 실행 경험을 먼저 확인하는 것이 자연스럽다.
+`Step 1. Phase Scaffolder`, `Step 2. Phase Metadata Validator`, `Step 3. Executor Dry Run`, `Step 4. Phase Report`, `Step 5. Hook Profiles`, `Step 6. Personal Review Rubric`, `Step Template v2`는 현재 저장소에 존재한다. 다음 작업자는 `phases/{phase-name}/events.jsonl` 추가와 `scripts/report_phase.py` 확장을 작게 설계하는 것이 자연스럽다.
+
+## Next Session Handoff: Phase Run Ledger
+
+내일 새 세션에서 바로 시작할 작업은 `Phase Run Ledger` 구현이다.
+
+권장 시작 순서:
+
+1. 현재 브랜치 상태를 확인한다.
+   - `git status --short --branch`
+   - `feat-step-template-v2` 변경이 아직 커밋되지 않았다면 먼저 이 브랜치를 정리한다.
+2. Step Template v2가 main에 반영된 상태에서 새 브랜치를 만든다.
+   - 권장 브랜치: `feat-phase-run-ledger`
+3. 구현 전에 테스트를 먼저 추가한다.
+   - `scripts/test_execute.py`: executor가 step attempt event를 append하는지 검증
+   - `scripts/test_report_phase.py`: report가 ledger의 최근 attempt를 출력하는지 검증
+4. 최소 구현 후 전체 검증을 실행한다.
+
+읽을 파일:
+
+- `AGENTS.md`
+- `.agents/skills/harness/SKILL.md`
+- `docs/HARNESS_ADVANCEMENT_ROADMAP.md`
+- `docs/HARNESS_TEMPLATE_SUMMARY.md`
+- `docs/NEXT_PROGRESS_PLAN.md`
+- `scripts/execute.py`
+- `scripts/report_phase.py`
+- `scripts/test_execute.py`
+- `scripts/test_report_phase.py`
+- `scripts/validate_phase.py`
+- `.gitignore`
+
+목표:
+
+- raw `stepN-output.json`은 계속 local artifact로 둔다.
+- durable execution history는 `phases/{phase-name}/events.jsonl`에 append-only JSON Lines로 남긴다.
+- report가 JSON output artifact를 직접 열지 않아도 최근 실행 시도와 retry 맥락을 보여준다.
+- 기본 sequential executor 동작과 phase metadata status contract는 바꾸지 않는다.
+
+초기 event schema 제안:
+
+```json
+{
+  "timestamp": "2026-05-13T22:18:50+0900",
+  "event": "step_attempt_finished",
+  "phase": "example-phase",
+  "step": 0,
+  "step_name": "project-setup",
+  "attempt": 1,
+  "status_before": "pending",
+  "status_after": "completed",
+  "exit_code": 0,
+  "duration_seconds": 12,
+  "message": "Created project scaffold."
+}
+```
+
+추천 event 종류:
+
+- `step_attempt_started`
+- `step_attempt_finished`
+- `phase_status_changed`
+
+구현 메모:
+
+- `scripts/execute.py`에 ledger path helper와 append helper를 작게 추가한다.
+- append helper는 한 줄에 하나의 JSON object를 쓰고, 기존 이벤트를 수정하지 않는다.
+- `StepExecutor._execute_single_step(...)`에서 Codex 호출 직전 start event를 남긴다.
+- Codex 호출 후 phase index를 다시 읽고 status를 판정한 뒤 finish event를 남긴다.
+- retry가 발생하면 finish event의 `status_after`는 `pending` 또는 `retrying`보다 실제 phase metadata에 가까운 값을 사용한다. 단순성을 위해 처음 구현은 `pending`, `completed`, `blocked`, `error` 중 하나로 제한해도 된다.
+- 최종 phase 완료, 차단, 실패 시 top-level phase status 변경을 `phase_status_changed`로 남긴다.
+- `scripts/report_phase.py`는 `events.jsonl`이 있으면 최근 3-5개 event와 attempt count를 출력한다. 파일이 없으면 기존 report output을 유지한다.
+
+테스트 아이디어:
+
+- temp git repo에서 fake `_invoke_codex` 또는 subclass를 사용해 step status를 `completed`로 바꾸고, `events.jsonl`에 start/finish event가 생기는지 확인한다.
+- retry 경로는 처음에는 helper-level unit test로 시작해도 된다. executor 통합 테스트가 과하게 복잡해지면 후속으로 남긴다.
+- report test는 synthetic `events.jsonl`을 직접 만들고, 출력에 `Recent attempts`, step number, attempt number, status transition, duration이 포함되는지 확인한다.
+
+수용 기준:
+
+```bash
+python3 -m unittest discover -s scripts -p 'test_*.py'
+python3 -m py_compile scripts/create_phase.py scripts/execute.py scripts/report_phase.py scripts/validate_phase.py
+.githooks/pre-commit
+git diff --check
+```
+
+주의:
+
+- `phases/**/step*-output.json`은 `.gitignore`에 계속 남겨 둔다. Reason: raw Codex output은 local artifact 정책이다.
+- `events.jsonl`은 durable history이므로 ignore하지 않는다. Reason: handoff와 report가 의존할 기록이다.
+- third-party dependency를 추가하지 않는다. Reason: template은 product-neutral하고 dependency-light해야 한다.
+- parallel execution이나 worktree isolation을 같이 구현하지 않는다. Reason: ledger가 먼저 sequential executor의 관측 가능성을 높여야 한다.

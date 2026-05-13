@@ -13,7 +13,7 @@ The template already includes the first layer of harness automation:
 - executor dry-run preview through `scripts/execute.py --dry-run`
 - phase status reporting through `scripts/report_phase.py`
 - optional hook profiles through `.codex/hooks/run-profile.sh`
-- self-contained phase step prompts under `phases/{phase-name}/step{N}.md`
+- self-contained v2 phase step prompts under `phases/{phase-name}/step{N}.md`
 - product contract templates in `docs/PRD.md`, `docs/ARCHITECTURE.md`, and `docs/ADR.md`
 
 This baseline should stay small. Future work should add durable harness behavior, not product-specific implementation code.
@@ -72,6 +72,11 @@ Acceptance:
 
 Goal: make each generated `step{N}.md` stronger as a self-contained execution unit.
 
+Status: implemented. `scripts/create_phase.py` now generates sections for
+`Files To Edit`, `Expected Output`, `Evidence`, `Decision Notes`, and `Recovery`
+in addition to the existing read-first, task, acceptance, verification, and
+guardrail sections.
+
 Scope:
 
 - add optional sections for `Expected Output`, `Evidence`, `Decision Notes`, and `Recovery`
@@ -103,6 +108,25 @@ Acceptance:
 - executor appends one event per important transition
 - report output includes latest attempt context without requiring raw output inspection
 - ledger writes are additive and safe to inspect manually
+
+Next-session implementation notes:
+
+- Start from a clean branch named `feat-phase-run-ledger`.
+- Keep `phases/{phase-name}/events.jsonl` as the durable history and leave
+  `stepN-output.json` as ignored local raw output.
+- Add small helpers in `scripts/execute.py` for ledger path resolution and
+  JSONL append. Do not introduce a third-party dependency.
+- Record at least `step_attempt_started` and `step_attempt_finished` events
+  around each Codex invocation. Include phase name, step number, step name,
+  attempt number, status before, status after, exit code when available,
+  duration in seconds, timestamp, and a short message when available.
+- Record phase-level status transitions only if it stays simple. If this makes
+  the first patch too broad, land step attempt events first and document the
+  phase event as follow-up.
+- Extend `scripts/report_phase.py` so an existing ledger shows recent attempts
+  without changing the output for phases that do not have `events.jsonl`.
+- Drive the work from tests in `scripts/test_execute.py` and
+  `scripts/test_report_phase.py`.
 
 ### 4. Executor Configuration
 
@@ -209,16 +233,16 @@ These ideas should stay out of the base template unless the template scope delib
 
 ## Near-Term Execution Order
 
-The next two implementation branches should stay small:
+The next implementation branches should stay small:
 
-1. `feat-step-template-v2`
-   - update `scripts/create_phase.py`
-   - update step prompt docs
-   - add tests for generated template content
-
-2. `feat-phase-run-ledger`
+1. `feat-phase-run-ledger`
    - add append-only execution events
    - extend report output
    - add tests for event creation and reporting
 
-After those two, revisit executor configuration and schema validation with the benefit of real usage data.
+2. `feat-executor-configuration`
+   - add focused executor options such as retry, timeout, sandbox, approval policy, and no-commit mode
+   - make dry-run print the effective configuration
+   - cover defaults and overrides with tests
+
+After those two, revisit schema validation with the benefit of real usage data.

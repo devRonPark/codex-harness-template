@@ -2,6 +2,8 @@
 
 This repository is a product-neutral Codex harness template. It contains the files needed to plan implementation work as phase steps and execute those steps through `codex exec`.
 
+For the full usage guide and README patterns borrowed from high-star harness repositories, see [docs/HARNESS_TEMPLATE_GUIDE.md](docs/HARNESS_TEMPLATE_GUIDE.md).
+
 ## What This Template Is For
 
 Use this template when you want Codex to implement a project through explicit, reviewable step files instead of a single large prompt.
@@ -132,7 +134,8 @@ The report shows phase status, completed/pending/blocked/error counts, next pend
 
 Each generated step lives at `phases/{phase-name}/step{N}.md`.
 
-Recommended structure:
+Generated steps use a v2 skeleton that keeps execution context, expected
+outcome, validation evidence, and recovery notes in the prompt itself:
 
 ````markdown
 # Step {N}: {step-name}
@@ -145,9 +148,18 @@ Recommended structure:
 - `/docs/ADR.md`
 - {files created or changed by previous steps}
 
+## Files To Edit
+
+- {files this step is expected to modify}
+
 ## Task
 
 Describe the concrete implementation work. Include file paths, required interfaces, constraints, and expected behavior.
+
+## Expected Output
+
+Describe the repository state, command output, user-facing behavior, or artifact
+that should exist when complete.
 
 ## Acceptance Criteria
 
@@ -155,11 +167,24 @@ Describe the concrete implementation work. Include file paths, required interfac
 {project-specific validation command}
 ```
 
+## Evidence
+
+Record the exact validation command output or success observation.
+
+## Decision Notes
+
+Record implementation decisions or discoveries that later steps need, or `N/A`.
+
+## Recovery
+
+Describe how to preserve failure context and retry safely if this step fails.
+
 ## Verification
 
 1. Run the acceptance criteria.
-2. Check architecture and ADR compliance.
-3. Update `phases/{phase-name}/index.json`:
+2. Record validation evidence.
+3. Check architecture and ADR compliance.
+4. Update `phases/{phase-name}/index.json`:
    - success: `status: completed` plus `summary`
    - unrecoverable failure: `status: error` plus `error_message`
    - needs user input: `status: blocked` plus `blocked_reason`
@@ -169,6 +194,14 @@ Describe the concrete implementation work. Include file paths, required interfac
 - Add unrelated features. Reason: keep the step independently reviewable.
 - Change files outside the step scope unless required by the acceptance criteria.
 ````
+
+Section purposes:
+
+- `Read First` gives a fresh execution agent the minimum context to load.
+- `Files To Edit` sets the expected write scope before implementation starts.
+- `Expected Output` describes the observable result, not just the task intent.
+- `Evidence` preserves validation output or success observations for handoff.
+- `Decision Notes` and `Recovery` make later retries and follow-up steps easier.
 
 ## Running A Phase
 

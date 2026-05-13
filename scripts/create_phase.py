@@ -158,21 +158,49 @@ def step_template(phase_name: str, step_num: int, step_name: str) -> str:
 - `/docs/ADR.md`
 - `/phases/{phase_name}/index.json`
 
+## Files To Edit
+
+- List the files this step is expected to modify.
+- Add generated files, metadata files, or docs that must change for this step.
+
 ## Task
 
-TBD
+Describe the concrete implementation work. Include required file paths, interfaces,
+behavioral constraints, and project boundaries.
+
+## Expected Output
+
+Describe the repository state, command output, user-facing behavior, or artifact
+that should exist when this step is complete.
 
 ## Acceptance Criteria
 
 ```bash
+# Replace with exact project-specific validation commands.
 TBD
 ```
+
+## Evidence
+
+Record the exact validation command output or success observation. Include enough
+detail for a later agent to verify what passed without rerunning everything.
+
+## Decision Notes
+
+- Record important implementation decisions or discoveries that later steps need.
+- Leave as `N/A` if no decision context is needed.
+
+## Recovery
+
+If this step fails, preserve the failure context in `phases/{phase_name}/index.json`
+and keep changes scoped so the step can be retried from a clean state.
 
 ## Verification
 
 1. Run the acceptance criteria.
-2. Check that the change follows `ARCHITECTURE.md`, `ADR.md`, and `AGENTS.md`.
-3. Update `phases/{phase_name}/index.json`:
+2. Record evidence from the validation command or success observation.
+3. Check that the change follows `ARCHITECTURE.md`, `ADR.md`, and `AGENTS.md`.
+4. Update `phases/{phase_name}/index.json`:
    - Success: set this step to `completed` and add `summary`.
    - Failed after reasonable retries: set this step to `error` and add `error_message`.
    - Needs user input: set this step to `blocked` and add `blocked_reason`.

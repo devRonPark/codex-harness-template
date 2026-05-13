@@ -74,6 +74,33 @@ class CreatePhaseTests(unittest.TestCase):
                 ],
             )
 
+    def test_step_template_includes_v2_execution_context_sections(self):
+        template = create_phase.step_template("add-auth", 0, "project-setup")
+
+        expected_sections = [
+            "## Read First",
+            "## Files To Edit",
+            "## Task",
+            "## Expected Output",
+            "## Acceptance Criteria",
+            "## Evidence",
+            "## Decision Notes",
+            "## Recovery",
+            "## Verification",
+            "## Do Not",
+        ]
+
+        last_index = -1
+        for section in expected_sections:
+            current_index = template.find(section)
+            self.assertNotEqual(current_index, -1, f"missing section: {section}")
+            self.assertGreater(current_index, last_index, f"section out of order: {section}")
+            last_index = current_index
+
+        self.assertIn("List the files this step is expected to modify.", template)
+        self.assertIn("Record the exact validation command output or success observation.", template)
+        self.assertIn("If this step fails", template)
+
     def test_rejects_invalid_phase_and_step_names(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
